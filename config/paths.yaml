@@ -1,0 +1,19 @@
+# Paths configuration — adjust to your local setup
+# All paths are relative to project root unless absolute
+
+data:
+  raw: data/raw
+  interim: data/interim
+  processed: data/processed
+  external: data/external
+  sample: data/sample
+
+outputs:
+  figures: outputs/figures
+  tables: outputs/tables
+  logs: outputs/logs
+
+reports:
+  weekly: reports/weekly
+  monthly: reports/monthly
+  memos: reports/research_memos

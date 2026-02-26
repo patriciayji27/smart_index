@@ -1,0 +1,59 @@
+# Heuristic regime definitions
+# These are starting points — refine with data, not conviction
+
+# VIX-based thresholds (simple first pass)
+vix_regimes:
+  low_vol:
+    vix_upper: 15
+    label: "low_vol"
+    description: "Complacent / carry-friendly"
+  normal:
+    vix_lower: 15
+    vix_upper: 22
+    label: "normal"
+  elevated:
+    vix_lower: 22
+    vix_upper: 30
+    label: "elevated"
+    description: "Hedging demand rising"
+  crisis:
+    vix_lower: 30
+    label: "crisis"
+
+# Term structure regime (VIX vs VIX3M or VX1-VX2)
+term_structure:
+  contango:
+    ratio_upper: 1.0    # VIX / VIX3M < 1 → contango
+    label: "contango"
+  flat:
+    ratio_lower: 0.95
+    ratio_upper: 1.05
+    label: "flat"
+  backwardation:
+    ratio_lower: 1.0
+    label: "backwardation"
+    description: "Near-term fear exceeds far-term — historically mean-reverts"
+
+# Skew regime (25d put IV - 25d call IV, 30d tenor)
+skew:
+  metric: "25d_put_minus_call_30d"
+  steep:
+    threshold_upper: null
+    percentile_above: 80
+    label: "steep_skew"
+  normal:
+    percentile_range: [20, 80]
+    label: "normal_skew"
+  flat:
+    percentile_below: 20
+    label: "flat_skew"
+    description: "Possibly complacent on tails — watch for snap steepening"
+
+# Composite regime (future: HMM or clustering overlay)
+composite:
+  method: "heuristic"   # "heuristic" | "hmm" | "kmeans"
+  features:
+    - vix_level
+    - term_structure_ratio
+    - skew_25d
+    - realized_vs_implied_spread

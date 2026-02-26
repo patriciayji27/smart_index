@@ -1,0 +1,48 @@
+# Macro events for event-study analysis
+# window_days: [pre, post] trading days around event
+
+events:
+  fomc:
+    name: FOMC Decision
+    window_days: [5, 5]
+    frequency: ~8_per_year
+    notes: "Include dot-plot meetings (Mar, Jun, Sep, Dec) as subgroup"
+
+  cpi:
+    name: CPI Release
+    window_days: [3, 3]
+    frequency: monthly
+
+  nfp:
+    name: Non-Farm Payrolls
+    window_days: [3, 3]
+    frequency: monthly
+
+  pce:
+    name: PCE Inflation
+    window_days: [2, 2]
+    frequency: monthly
+
+  opex:
+    name: Options Expiration (monthly)
+    window_days: [5, 2]
+    frequency: monthly
+    notes: "Third Friday; track gamma exposure unwind"
+
+  vix_expiry:
+    name: VIX Expiration
+    window_days: [3, 2]
+    frequency: monthly
+    notes: "Wednesday before third Friday of month"
+
+  quad_witching:
+    name: Quarterly OPEX (Quad Witching)
+    window_days: [5, 3]
+    frequency: quarterly
+    notes: "Mar, Jun, Sep, Dec — largest notional rolls"
+
+# Custom one-off events can be added as needed:
+# tariff_announcement:
+#   name: "Tariff Announcement 2025-04-02"
+#   date: "2025-04-02"
+#   window_days: [5, 10]

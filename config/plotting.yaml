@@ -1,0 +1,31 @@
+# Plotting defaults
+
+style:
+  matplotlib_style: "seaborn-v0_8-whitegrid"
+  figsize_default: [10, 6]
+  figsize_wide: [14, 6]
+  figsize_square: [8, 8]
+  dpi: 150
+  font_family: "sans-serif"
+
+colors:
+  primary: "#1f77b4"
+  secondary: "#ff7f0e"
+  positive: "#2ca02c"
+  negative: "#d62728"
+  neutral: "#7f7f7f"
+  regime:
+    low_vol: "#2ca02c"
+    normal: "#1f77b4"
+    elevated: "#ff7f0e"
+    crisis: "#d62728"
+
+surface:
+  colormap: "RdYlBu_r"
+  contour_levels: 20
+  alpha: 0.85
+
+export:
+  format: "png"           # "png" | "pdf" | "svg"
+  transparent: false
+  bbox_inches: "tight"
