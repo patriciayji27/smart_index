@@ -1,59 +1,115 @@
-# Heuristic regime definitions
-# These are starting points — refine with data, not conviction
+# Regime classification rules — heuristic first pass
+# Refine with data; update as surface feature panel is built out
+# Phase 7: HMM overlay on surface features planned
 
-# VIX-based thresholds (simple first pass)
+# ── VIX-based thresholds (simple first pass) ─────────────────────────────────
 vix_regimes:
-  low_vol:
-    vix_upper: 15
-    label: "low_vol"
-    description: "Complacent / carry-friendly"
+  calm:
+    vix_upper: 17
+    label: "calm_low_vol"
+    description: "Dealer gamma likely elevated; mechanical vol suppression dominant"
   normal:
-    vix_lower: 15
+    vix_lower: 17
     vix_upper: 22
     label: "normal"
   elevated:
     vix_lower: 22
     vix_upper: 30
     label: "elevated"
-    description: "Hedging demand rising"
+    description: "Hedging demand rising; watch correlation smile for direction"
   crisis:
     vix_lower: 30
     label: "crisis"
+    description: "GEX likely flipped negative; realized vol catching implied"
 
-# Term structure regime (VIX vs VIX3M or VX1-VX2)
+# ── Implied correlation regimes (COR3M) ──────────────────────────────────────
+# This is the core addition from the dispersion signal research.
+# COR3M is available from CBOE; proxy via index vs component IV decomposition.
+implied_correlation_regimes:
+  idiosyncratic:
+    cor3m_upper: 30
+    smile_width_lower: 18        # COR10D - COR90D > 18 → steep smile
+    label: "idiosyncratic"
+    description: "Low implied corr + steep smile → stock pickers' market. Wide VRP."
+  neutral:
+    cor3m_range: [30, 48]
+    label: "neutral_corr"
+  macro_driven:
+    cor3m_lower: 48
+    vix_lower: 22
+    label: "macro_driven"
+    description: "High corr + elevated VIX → factor exposure dominates. Flat smile."
+  concentrated_name:
+    # VIX rising while COR3M is low or falling
+    cor3m_upper: 35
+    vix_lower: 20
+    label: "concentrated_name"
+    description: "Vol localized to 1-2 mega-caps. COR3M doesn't confirm the VIX move."
+
+# ── Term structure regime ─────────────────────────────────────────────────────
 term_structure:
   contango:
-    ratio_upper: 1.0    # VIX / VIX3M < 1 → contango
+    ratio_upper: 1.0            # VIX / VIX3M < 1 → contango (normal)
     label: "contango"
   flat:
-    ratio_lower: 0.95
-    ratio_upper: 1.05
+    ratio_range: [0.95, 1.05]
     label: "flat"
   backwardation:
     ratio_lower: 1.0
     label: "backwardation"
-    description: "Near-term fear exceeds far-term — historically mean-reverts"
+    description: "Near-term fear exceeds far-term. Historically mean-reverts quickly."
 
-# Skew regime (25d put IV - 25d call IV, 30d tenor)
+# ── Skew regime ───────────────────────────────────────────────────────────────
 skew:
   metric: "25d_put_minus_call_30d"
   steep:
-    threshold_upper: null
-    percentile_above: 80
+    percentile_above: 75
     label: "steep_skew"
+    description: "Expensive downside protection; tail hedging demand elevated"
   normal:
-    percentile_range: [20, 80]
+    percentile_range: [25, 75]
     label: "normal_skew"
   flat:
-    percentile_below: 20
+    percentile_below: 25
     label: "flat_skew"
-    description: "Possibly complacent on tails — watch for snap steepening"
+    description: "Complacent on tails; watch for snap steepening"
 
-# Composite regime (future: HMM or clustering overlay)
+# ── Tech spread regime (new — sector_spread.py) ───────────────────────────────
+tech_spread:
+  metric: "xlk_spy_spread_20d_beta_adjusted"
+  wide:
+    zscore_above: 1.5
+    label: "tech_leading"
+    description: "Tech outperforming; growth/low-rate regime priced. Monitor crowding."
+  neutral:
+    zscore_range: [-1.5, 1.5]
+    label: "neutral"
+  tightening:
+    zscore_below: -1.0
+    direction: "deteriorating"  # spread falling from wide level
+    label: "tech_underperforming"
+    description: "Watch for vol expansion in 4-6 weeks. Rotation toward value/defensives."
+
+# ── Composite regime (3 regimes from dispersion signal research) ──────────────
 composite:
-  method: "heuristic"   # "heuristic" | "hmm" | "kmeans"
+  method: "heuristic"          # "heuristic" | "hmm" | "kmeans" (Phase 7)
   features:
     - vix_level
-    - term_structure_ratio
-    - skew_25d
-    - realized_vs_implied_spread
+    - vix_vix3m_ratio           # term structure
+    - skew_25d_30d              # put-call skew
+    - implied_corr_cor3m        # dispersion signal
+    - corr_smile_width          # cor10d - cor90d
+    - iv_minus_rv_spread        # vol risk premium
+    - tech_spread_20d           # sector spread (new)
+
+  # Three-regime output from research:
+  output_labels:
+    macro_driven:
+      conditions: "cor3m > 48 AND vix > 22"
+      description: "Factor exposure dominates; diversification limited"
+    idiosyncratic:
+      conditions: "cor3m < 30 AND vix < 22 AND smile_width > 18"
+      description: "Dispersion trades carry; stock-picking regime"
+    concentrated_name:
+      conditions: "vix > 20 AND cor3m < 35 AND vix_rising"
+      description: "Vol localized to 1-2 names; not systemic"

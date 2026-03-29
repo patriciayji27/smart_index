@@ -1,22 +1,27 @@
 # Macro events for event-study analysis
 # window_days: [pre, post] trading days around event
 
+# ── Scheduled events ─────────────────────────────────────────────────────────
 events:
   fomc:
     name: FOMC Decision
     window_days: [5, 5]
     frequency: ~8_per_year
-    notes: "Include dot-plot meetings (Mar, Jun, Sep, Dec) as subgroup"
+    notes: >
+      Include dot-plot meetings (Mar, Jun, Sep, Dec) as subgroup.
+      Pre-FOMC drift (Lucca & Moench 2015) documented in 2pm-2pm window.
 
   cpi:
     name: CPI Release
     window_days: [3, 3]
     frequency: monthly
+    notes: "Usually second or third Tuesday of month, 8:30am ET"
 
   nfp:
     name: Non-Farm Payrolls
     window_days: [3, 3]
     frequency: monthly
+    notes: "First Friday of month, 8:30am ET"
 
   pce:
     name: PCE Inflation
@@ -27,22 +32,62 @@ events:
     name: Options Expiration (monthly)
     window_days: [5, 2]
     frequency: monthly
-    notes: "Third Friday; track gamma exposure unwind"
+    notes: "Third Friday; track gamma exposure unwind — largest notional event monthly"
 
   vix_expiry:
     name: VIX Expiration
     window_days: [3, 2]
     frequency: monthly
-    notes: "Wednesday before third Friday of month"
+    notes: "Wednesday before third Friday; VX futures roll affects dealer positioning"
 
   quad_witching:
     name: Quarterly OPEX (Quad Witching)
     window_days: [5, 3]
     frequency: quarterly
-    notes: "Mar, Jun, Sep, Dec — largest notional rolls"
+    notes: "Mar, Jun, Sep, Dec — largest notional rolls; GEX cliff common"
 
-# Custom one-off events can be added as needed:
-# tariff_announcement:
-#   name: "Tariff Announcement 2025-04-02"
-#   date: "2025-04-02"
-#   window_days: [5, 10]
+# ── Historical shock events (case studies from research) ─────────────────────
+historical_shocks:
+  volmageddon_2018:
+    name: "Volmageddon"
+    date: "2018-02-05"
+    window_days: [5, 10]
+    type: "positioning_shock"
+    notes: >
+      VIX spiked 20pts (17→37). SPX −4.1%. XIV (short-vol ETP) lost 97%.
+      Classic gamma-flip event: inverse-vol ETPs collectively short ~280K VIX
+      futures; rebalancing was self-reinforcing. 35K contracts in final 3 min.
+      Data: VIX intraday, XIV price, SPX futures.
+
+  yen_carry_2024:
+    name: "Yen-Carry Unwind"
+    date: "2024-08-05"
+    window_days: [3, 7]
+    type: "carry_unwind"
+    notes: >
+      BOJ rate hike → yen carry unwind → Nikkei −12% in a session.
+      VIX from 13 to 39 close, 65 intraday (COVID-level). SPX −3%.
+      Recovery fast: SPX recovered most of decline by Aug 9.
+      BIS Bulletin #90 covers this episode in detail.
+
+  svb_2023:
+    name: "SVB Collapse"
+    date: "2023-03-10"
+    window_days: [3, 10]
+    type: "sector_stress"
+    notes: >
+      VIX rose to mid-20s but COR3M barely moved — sector-specific stress.
+      Canonical example of concentrated-name vol: vol localized to regional
+      banks, not broad market. DSPX stayed near 10-yr median throughout.
+
+  liberation_day_2025:
+    name: "Liberation Day Tariffs"
+    date: "2025-04-02"
+    window_days: [2, 15]
+    type: "macro_shock"
+    notes: >
+      Tariff announcement → SPX −10% over 2 sessions. VIX from 21 to 52.33
+      (Apr 8). 101M options contracts Apr 4 (new record). SPX options: 6.04M.
+      DSPX spiked to median 41.5 in following days. COR3M rose to low 50s
+      alongside VIX — confirming macro-driven, not localized, regime.
+      1-month realized vol hit 43% (highest since COVID).
